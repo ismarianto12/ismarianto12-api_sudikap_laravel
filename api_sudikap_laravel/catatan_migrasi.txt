@@ -1,0 +1,24 @@
+modify data kosong dengan cmd sql :
+use webmnc;
+
+ALTER TABLE post
+MODIFY COLUMN seotitle VARCHAR(250) NULL;
+
+
+UPDATE post p
+SET p.seotitle = REPLACE(p.title, ' ', '-')
+WHERE p.seotitle IS NULL;
+
+alter table album add column created_on datetime NULL;
+alter table album add column created_by int(35) NULL;
+alter table album add column updated_on datetime NULL;
+alter table album add column updated_by int(15) NULL;
+
+alter table struktur_korporasi DROP column update_on;
+alter table struktur_korporasi DROP column update_by;
+
+
+
+///data riset update active jika status 1
+
+//
