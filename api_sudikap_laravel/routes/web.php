@@ -1,6 +1,9 @@
 <?php
-
-use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\AnggaranController;
+use App\Http\Controllers\SppdController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\InstansiController;
 use App\Http\Controllers\TmjabatanController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JenisController;
@@ -12,10 +15,14 @@ use App\Http\Controllers\DisposisiController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\SatuanController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsersController;
+ 
 
-Route::prefix('api/v1')->group(function () { 
+Route::prefix('api/v1')->group(function () {
     Route::post('login', [Logincontroller::class, 'authenticate'])->name('login');
+    Route::prefix('document')->group(function () {
+        Route::get('download/{id}', [DocumentController::class, 'exportToWord'])->name('download');
+    });
 });
 Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
     Route::get('/', [HomeController::class, 'index'])->name('/');
@@ -29,14 +36,39 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('update/{id}', [DisposisiController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [DisposisiController::class, 'destroy'])->name('destroy');
         });
+        Route::prefix('instansi')->group(function () {
+            Route::get('list', [InstansiController::class, 'index'])->name('list');
+            Route::post('insert', [InstansiController::class, 'store'])->name('insert');
+            Route::get('detail/{id}', [InstansiController::class, 'edit'])->name('detail');
+            Route::post('update', [InstansiController::class, 'update'])->name('update');
+            Route::delete('destroy/{id}', [InstansiController::class, 'destroy'])->name('destroy');
+        });
+ 
+        Route::prefix('anggaran')->group(function () {
+            Route::get('list', [AnggaranController::class, 'index'])->name('list');
+            Route::post('insert', [AnggaranController::class, 'store'])->name('insert');
+            Route::get('detail/{id}', [AnggaranController::class, 'edit'])->name('detail');
+            Route::post('update', [AnggaranController::class, 'update'])->name('update');
+            Route::delete('destroy/{id}', [AnggaranController::class, 'destroy'])->name('destroy');
+        });
+ 
+
+        Route::prefix('user')->group(function () {
+            Route::get('list', [UsersController::class, 'index'])->name('list');
+            Route::post('insert', [UsersController::class, 'store'])->name('insert');
+            Route::get('detail/{id}', [UsersController::class, 'edit'])->name('detail');
+            Route::post('update/{id}', [UsersController::class, 'update'])->name('update');
+            Route::delete('destroy/{id}', [UsersController::class, 'destroy'])->name('destroy');
+        });
 
         Route::prefix('surat')->group(function () {
-            Route::get('list', [SuratController::class, 'index'])->name('list');
-            Route::post('insert', [SuratController::class, 'store'])->name('insert');
-            Route::get('detail/{id}', [SuratController::class, 'edit'])->name('detail');
-            Route::post('update/{id}', [SuratController::class, 'update'])->name('update');
-            Route::delete('destroy/{id}', [SuratController::class, 'destroy'])->name('destroy');
+            Route::get('list', [SppdController::class, 'index'])->name('list');
+            Route::post('insert', [SppdController::class, 'store'])->name('insert');
+            Route::get('detail/{id}', [SppdController::class, 'edit'])->name('detail');
+            Route::post('update/{id}', [SppdController::class, 'update'])->name('update');
+            Route::delete('destroy/{id}', [SppdController::class, 'destroy'])->name('destroy');
         });
+
         Route::prefix('surat_keluar')->group(function () {
             Route::get('list', [SuratKeluarController::class, 'index'])->name('list');
             Route::post('insert', [SuratKeluarController::class, 'store'])->name('insert');
@@ -89,7 +121,7 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('update/{id}', [SatuanController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [SatuanController::class, 'destroy'])->name('destroy');
         });
-        
+
     });
 
-}); 
+});

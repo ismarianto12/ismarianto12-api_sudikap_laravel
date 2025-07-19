@@ -21,6 +21,27 @@ class HomeController extends Controller
         $this->request = $request;
 
     }
+
+    function rekapData(Request $request)
+    {
+        $data = [];
+        switch ($request) {
+            case 'disposisi':
+                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
+                break;
+            case 'sppd': 
+                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
+                break; 
+            case 'arsip': 
+                $data = DB::select('count(id) as  data')->table('arsip')->get();
+                break;
+            case 'satker': 
+                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
+                break;
+        }
+        return response()->json(['data' => $data]);
+    }
+
     public function index()
     {
         return response()->json(['api' => 'v1']);
@@ -81,7 +102,21 @@ class HomeController extends Controller
         $tanggalSekarang = date('Y-m-d');
 
         $query = DB::table('promo')
-            ->select(DB::raw('REPLACE(promo.titleID,"-"," ") as formatted_title'), 'id', 'titleID', 'seotitle', 'titleEn', 'deskripsiId', 'deskripsiEn', 'filethumnaild', 'imagepopup', 'imageheader', 'document1', 'document2', 'linkvideo', 'created_at',
+            ->select(
+                DB::raw('REPLACE(promo.titleID,"-"," ") as formatted_title'),
+                'id',
+                'titleID',
+                'seotitle',
+                'titleEn',
+                'deskripsiId',
+                'deskripsiEn',
+                'filethumnaild',
+                'imagepopup',
+                'imageheader',
+                'document1',
+                'document2',
+                'linkvideo',
+                'created_at',
                 'updated_at',
                 'linkpromo2',
                 'linkpromo2'
@@ -295,9 +330,9 @@ class HomeController extends Controller
 
         $query = DB::table('post')
             ->select(DB::raw('REPLACE(post.title,"-"," ") as formatted_title'), 'post.id_post', 'post.id_category', 'post.stockcode', 'post.title', 'post.judul', 'post.content', 'post.isi', 'post.seotitle', 'post.tags', 'post.tag', DB::raw('DATE_FORMAT(post.date,"%Y-%M-%d") as date'), 'post.time', 'post.editor', 'post.protect', 'post.active', 'post.headline', 'post.picture', 'post.hits', 'post.new_version', 'category.title')
-        // ->whereNotIn('post.id_category', [13, 14, 24, 26])
+            // ->whereNotIn('post.id_category', [13, 14, 24, 26])
             ->join('category', 'post.id_category', '=', 'category.id_category', 'left')
-        // ->where('post.active', 1)
+            // ->where('post.active', 1)
             ->where('category.seotitle', $category);
         // ->whereNotNull('post.title');
 
@@ -336,9 +371,19 @@ class HomeController extends Controller
         $limit = $request->input('limit', '');
         $tahun = $request->input('tahun', '');
         $query = DB::table('jadwal')
-            ->select('id', 'topic', 'descriptionId', 'descriptionEn', 'type_edukasi', 'link_registrasi', 'image',
+            ->select(
+                'id',
+                'topic',
+                'descriptionId',
+                'descriptionEn',
+                'type_edukasi',
+                'link_registrasi',
+                'image',
                 DB::raw('DATE_FORMAT(jadwal.created_on,"%d-%M-%Y %H:%m") as created_at'),
-                'venue', 'updated_at', 'user_id')
+                'venue',
+                'updated_at',
+                'user_id'
+            )
             ->where('type_edukasi', $category);
         if (!empty($tahun)) {
             $query->whereYear('created_at', $tahun); // Adjust this based on your actual column name
@@ -373,7 +418,25 @@ class HomeController extends Controller
         $limit = $request->input('limit', '');
 
         $query = Post::select(
-            'post.id_post', 'post.id_category', 'post.stockcode', 'post.title', 'post.judul', 'post.content', 'post.isi', 'post.seotitle', 'post.tags', 'post.tag', 'post.time', 'post.editor', 'post.protect', 'post.active', 'post.headline', 'post.picture', 'post.hits', 'post.new_version', 'category.title',
+            'post.id_post',
+            'post.id_category',
+            'post.stockcode',
+            'post.title',
+            'post.judul',
+            'post.content',
+            'post.isi',
+            'post.seotitle',
+            'post.tags',
+            'post.tag',
+            'post.time',
+            'post.editor',
+            'post.protect',
+            'post.active',
+            'post.headline',
+            'post.picture',
+            'post.hits',
+            'post.new_version',
+            'category.title',
             DB::raw('DATE_FORMAT(post.date,"%d-%M-%Y %H:%m") as date'),
             DB::raw('REPLACE(post.title,"-"," ") as formatted_title')
 
@@ -568,12 +631,13 @@ class HomeController extends Controller
                 "success" => true,
                 "time" => date("Y-m-d H:i:s"),
                 "data" => [
-                    "sources" => [[
-                        "name" => "default",
-                        "baseurl" => "https://wwwdev.mncsekuritas.id:30443/assetweb/",
-                        "path" => "files/uploads/",
-                        "files" => $loopingFile,
-                    ],
+                    "sources" => [
+                        [
+                            "name" => "default",
+                            "baseurl" => "https://wwwdev.mncsekuritas.id:30443/assetweb/",
+                            "path" => "files/uploads/",
+                            "files" => $loopingFile,
+                        ],
                     ],
                     "code" => 220,
                 ],

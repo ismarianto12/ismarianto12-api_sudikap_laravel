@@ -16,7 +16,6 @@ class AlbumController extends Controller
     public function index()
     {
         //
-
         $data = Album::select(
             'album.id_album as id',
             'album.title',

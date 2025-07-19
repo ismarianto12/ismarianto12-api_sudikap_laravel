@@ -12,7 +12,7 @@ class SppdController extends Controller
 
     public function getSppdData(Request $request)
     {
-        $jenisSppdId = $request->input('jenisppd_id');
+        $jenisSppdId = $request->input('jenisppd_id') ? $request->input('jenisppd_id') : '';
         $query = DB::table('sppd')
             ->select([
                 'sppd.id as sppd_id',
@@ -97,8 +97,8 @@ class SppdController extends Controller
             'page' => 'sometimes|integer|min:1',
             'sort_by' => 'sometimes|string|in:id,letter_code,letter_date,date_go,date_back,status',
             'sort_order' => 'sometimes|string|in:asc,desc',
-            'status' => 'sometimes|string',
-            'search' => 'sometimes|string',
+            // 'status' => 'sometimes|string',
+            // 'search' => 'sometimes|string',
         ]);
 
         if ($validator->fails()) {

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class UsersController extends Controller
 {
-    // List all users (GET)
     public function index(Request $request)
     {
 

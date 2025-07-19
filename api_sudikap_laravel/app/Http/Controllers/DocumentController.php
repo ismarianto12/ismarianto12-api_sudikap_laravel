@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class DocumentController extends Controller
-{ 
+{
     private function getSppdData($id)
     {
         return DB::table('sppd')
@@ -54,7 +54,7 @@ class DocumentController extends Controller
                 'basic',
                 'city',
                 'rekening',
-                'nip_pejabat',
+                'sppd.nip_pejabat',
                 'nip_leader',
                 'pimpinan as pimpinan_nip'
             ])
@@ -100,22 +100,33 @@ class DocumentController extends Controller
     private function tglIndonesia($date)
     {
         $bulan = [
-            1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            1 => 'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
         ];
-        
+
         $date = strtotime($date);
-        return date('j', $date) . ' ' . $bulan[(int)date('n', $date)] . ' ' . date('Y', $date);
+        return date('j', $date) . ' ' . $bulan[(int) date('n', $date)] . ' ' . date('Y', $date);
     }
 
     /**
      * Export SPPD to Word
      */
-    public function exportToWord($id, $namaFile)
+    public function exportToWord($id, $namaFile = 'SPPD_TEMPLATE')
     {
         // Get main SPPD data
         $sppd = $this->getSppdData($id);
-        
+        // dd($sppd->place_to);
+
         if (!$sppd) {
             abort(404, 'Data SPPD tidak ditemukan');
         }
@@ -125,11 +136,11 @@ class DocumentController extends Controller
         $diperintah = $this->getPegawaiData($sppd->nip_leader);
         $jsurat = $this->getJenisSurat($sppd->jenis_surat_id);
         $pimpinan = $this->getPegawaiData($sppd->pimpinan_nip);
-        
+
         // Process pengikut data
         $pengikut = $this->getPengikutData($sppd->pengikut_nip);
         $replacements = [];
-        
+
         foreach ($pengikut as $index => $p) {
             $replacements[] = [
                 'no' => $index + 1,
@@ -137,24 +148,24 @@ class DocumentController extends Controller
                 'golongan_pengikut' => $p->golongan,
                 'nip' => $p->nip,
                 'jabatan_pengikut' => $p->jabatan,
-                'place_to' => $p->place_to,
-                'length_journey' => $p->length_journey,
-                'date_go' => $this->tglIndonesia($p->date_go),
-                'date_back' => $this->tglIndonesia($p->date_back),
-                'government' => $p->government,
-                'description' => $p->description,
+                'place_to' => isset($p->place_to) ? $p->place_to : '',
+                'length_journey' => isset($p->length_journey) ? $p->length_journey : '',
+                'date_go' => isset($p->date_go) ? $this->tglIndonesia($p->date_go) : '',
+                'date_back' => isset($p->date_back) ? $this->tglIndonesia($p->date_back) : '',
+                'government' => isset($p->government) ? $p->government : '',
+                'description' => isset($p->description) ? $p->description : '',
             ];
         }
 
         // Load Word template
-        $templatePath = storage_path('app/templates/' . $namaFile . '.docx');
+        $templatePath = storage_path('app/templates/SPPD_OUTIN.docx');
         $templateProcessor = new TemplateProcessor($templatePath);
 
         // Set logo
-        $logoPath = file_exists(public_path('assets/img/logo.png')) 
-            ? public_path('assets/img/logo.png') 
+        $logoPath = file_exists(public_path('assets/img/logo.png'))
+            ? public_path('assets/img/logo.png')
             : public_path('assets/img/no_image.png');
-        
+
         $templateProcessor->setImageValue('CompanyLogo', [
             'path' => $logoPath,
             'width' => 100,
