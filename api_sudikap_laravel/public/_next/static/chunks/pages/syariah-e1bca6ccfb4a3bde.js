@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2021],{85641:function(n,u,_){(window.__NEXT_P=window.__NEXT_P||[]).push(["/syariah",function(){return _(91409)}])},91409:function(n,u,_){"use strict";_.r(u);var t=_(85893);u.default=()=>(0,t.jsx)(t.Fragment,{})}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=85641)}),_N_E=n.O()}]);

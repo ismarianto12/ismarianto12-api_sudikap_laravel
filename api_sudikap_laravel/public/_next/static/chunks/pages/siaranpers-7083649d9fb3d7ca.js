@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[7838],{44467:function(n,r,u){(window.__NEXT_P=window.__NEXT_P||[]).push(["/siaranpers",function(){return u(91129)}])},91129:function(n,r,u){"use strict";u.r(r);var e=u(85893);r.default=()=>(0,e.jsx)(e.Fragment,{children:"Siaran Pers"})}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=44467)}),_N_E=n.O()}]);

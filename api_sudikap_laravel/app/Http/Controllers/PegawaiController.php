@@ -24,7 +24,7 @@ class PegawaiController extends Controller
     public function index()
     {
         $id_satker = $this->request->get('satker_id');
-        $page = $this->request->page ? $this->request->page : 10;
+        $page = 10;
         
         $query = DB::table('pegawai')
             ->select(
@@ -59,8 +59,8 @@ class PegawaiController extends Controller
                 'sikd_satker.kode',
                 DB::raw('IFNULL(sikd_satker.nama, "Belum diset") as namasatker')
             )
-            ->leftJoin('sikd_satker', 'pegawai.sikd_satker_id', '=', 'sikd_satker.id')
-            ->where('pegawai.status_deleted', 0);
+            ->leftJoin('sikd_satker', 'pegawai.sikd_satker_id', '=', 'sikd_satker.id');
+            // ->where('pegawai.status_deleted', 0);
 
         if ($id_satker) {
             $query->where('pegawai.sikd_satker_id', $id_satker);

@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[9253],{77850:function(n,i,t){(window.__NEXT_P=window.__NEXT_P||[]).push(["/onlinetrading",function(){return t(25365)}])},25365:function(n,i,t){"use strict";t.r(i);var u=t(85893);i.default=()=>(0,u.jsx)(u.Fragment,{children:"onlinetrading"})}},function(n){n.O(0,[9774,2888,179],function(){return n(n.s=77850)}),_N_E=n.O()}]);

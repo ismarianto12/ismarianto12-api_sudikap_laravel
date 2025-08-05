@@ -52,6 +52,16 @@ class UsersController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+
+        $data = DB::table('login')
+            ->select('id_user', 'username', 'nama', 'level', 'foto', 'email', 'active')
+            ->where('id_user', $id)
+            ->first();
+        return response()->json(['data' => $data]);
+    }
+
     // Create a new user (POST)
     public function store(Request $request)
     {

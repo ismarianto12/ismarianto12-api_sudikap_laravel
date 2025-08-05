@@ -16,9 +16,9 @@ class TmjabatanController extends Controller
 
         // Filtering
         if ($request->has('title')) {
-            $query->where('title', 'like', '%'.$request->title.'%');
+            $query->where('title', 'like', '%' . $request->title . '%');
         }
-        
+
         if ($request->has('stat')) {
             $query->where('stat', $request->stat);
         }
@@ -26,20 +26,20 @@ class TmjabatanController extends Controller
         // Searching (global search)
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', '%'.$search.'%')
-                  ->orWhere('description', 'like', '%'.$search.'%')
-                  ->orWhere('otherString', 'like', '%'.$search.'%');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('otherString', 'like', '%' . $search . '%');
             });
         }
 
         // Sorting
         $sortField = $request->get('sort_field', 'id');
-        $sortOrder = $request->get('sort_order', 'asc');
+        $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortField, $sortOrder);
 
         // Paging
-        $perPage = $request->get('per_page', 10);
+        $perPage = $request->get('per_page', 5);
         $data = $query->paginate($perPage);
 
         return response()->json([
@@ -51,6 +51,19 @@ class TmjabatanController extends Controller
                 'total' => $data->total(),
             ]
         ]);
+    }
+    function edit($id)
+    {
+        $data = DB::table('tmjabatan')
+            ->select('id', 'title', 'description', 'stat', 'otherString')
+            ->where('id', $id)
+            ->first();
+
+        if (!$data) {
+            return response()->json(['message' => 'Data not found'], 404);
+        }
+
+        return response()->json($data);
     }
 
     // POST /api/tmjabatan
@@ -96,13 +109,13 @@ class TmjabatanController extends Controller
             'otherString' => 'nullable|string'
         ]);
 
-        $affected = DB::table('tmjabatan')
+        DB::table('tmjabatan')
             ->where('id', $id)
             ->update($validated);
 
-        if ($affected === 0) {
-            return response()->json(['message' => 'Data not found'], 404);
-        }
+        // if ($affected === 0) {
+        //     return response()->json(['message' => 'Data not found'], 404);
+        // }
 
         return response()->json(['message' => 'Data updated successfully']);
     }
