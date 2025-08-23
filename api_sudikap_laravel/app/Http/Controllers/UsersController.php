@@ -70,7 +70,7 @@ class UsersController extends Controller
             'password' => 'required|string|min:6',
             'nama' => 'required|string|max:30',
             'level' => 'required|in:admin,user,staff',
-            'foto' => 'required|string|max:50',
+            // 'foto' => 'required|string|max:50',
             'email' => 'required|email|max:50|unique:login',
             'active' => 'required|in:y,n',
         ]);
@@ -79,7 +79,8 @@ class UsersController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $data = $request->only(['username', 'nama', 'level', 'foto', 'email', 'active']);
+        $data = $request->only(['username', 'nama', 'level', 'email', 'active']);
+        $data['foto'] = "default.png"; // Assuming a default photo
         $data['password'] = Hash::make($request->password);
         $data['log'] = now()->toDateTimeString();
         $data['statuslogin'] = 0;

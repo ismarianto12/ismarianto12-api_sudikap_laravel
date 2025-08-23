@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class SppdController extends Controller
-{ 
+{
 
     public function getSppdData(Request $request)
     {
@@ -70,7 +70,7 @@ class SppdController extends Controller
         if ($jenisSppdId) {
             $query->where('sppd.jenis_surat_id', $jenisSppdId);
         }
- 
+
         return datatables()->of($query)
             ->addColumn('action', function ($row) {
                 return '
@@ -135,56 +135,81 @@ class SppdController extends Controller
         return response()->json($sppds);
     }
 
-    // Create new SPPD
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'letter_code' => 'required|string|unique:sppds,letter_code',
-            'letter_subject' => 'required|string',
-            'letter_about' => 'required|string',
-            'letter_from' => 'required|string',
-            'letter_content' => 'required|string',
-            'letter_date' => 'required|date',
-            'pimpinan' => 'required|string',
-            'rate_travel' => 'required|numeric',
-            'pengikut_nip' => 'required|array',
-            'purpose' => 'required|string',
-            'transport' => 'required|string',
-            'place_from' => 'required|string',
-            'place_to' => 'required|string',
-            'date_go' => 'required|date',
-            'date_back' => 'required|date|after_or_equal:date_go',
-            'government' => 'required|string',
-            'budget' => 'required|string',
-            'budget_from' => 'required|string',
-            'description' => 'required|string',
-            'jenis_surat_id' => 'required|exists:jenis_surats,id',
-            'basic' => 'nullable|string',
-            'city' => 'nullable|string',
-            'rekening' => 'nullable|string',
-            'kabag' => 'nullable|string',
-            'kasubag' => 'nullable|string',
-            'pimpinan_spt' => 'nullable|string',
-            'kabag_spt' => 'nullable|string',
-            'kasubag_spt' => 'nullable|string',
-            'letter_code_spt' => 'nullable|string',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            // Mapping data dari request ke kolom tabel
+            $data = [
+                'pimpinan' => $request->pimpinan ?? null,
+                'nip_pejabat' => $request->nip_pejabat ?? null,
+                'nip_leader' => $request->nip_leader ?? null,
+                'letter_code' => $request->letter_code ?? null,
+                'letter_subject' => $request->letter_subject ?? null,
+                'letter_about' => $request->letter_about ?? null,
+                'letter_from' => $request->letter_from ?? null,
+                'letter_content' => $request->letter_content ?? null,
+                'letter_date' => $request->letter_date ?? null,
+                'code' => $request->letter_code ?? null, // Menggunakan letter_code sebagai code
+                'date' => now()->format('Y-m-d H:i:s'),
+                'bawahan' => $request->bawahan ?? null,
+                'atasan' => $request->atasan ?? null,
+                'rate_travel' => $request->rateTravel ?? $request->rate_travel ?? null,
+                'pengikut_nip' => is_array($request->pengikut) ? implode(',', $request->pengikut) : $request->pengikut,
+                'purpose' => $request->travelPurpose ?? $request->purpose ?? null,
+                'transport' => $request->transport ?? null,
+                'place_from' => $request->departurePlace ?? $request->place_from ?? null,
+                'place_to' => $request->destination ?? $request->place_to ?? null,
+                'length_journey' => $request->duration ?? $request->length_journey ?? null,
+                'date_go' => $request->departureDate ?? $request->date_go ?? null,
+                'date_back' => $request->returnDate ?? $request->date_back ?? null,
+                'government' => $request->government ?? null,
+                'budget' => $request->budgetItem ?? $request->budget ?? null,
+                'budget_from' => $request->budget_from ?? null,
+                'description' => $request->notes ?? $request->description ?? null,
+                'result_date' => $request->result_date ?? null,
+                'result' => $request->result ?? null,
+                'result_username' => $request->result_username ?? null,
+                'file' => $request->file ?? null,
+                'jenis_surat_id' => $request->category ?? $request->jenis_surat_id ?? null,
+                'file_update' => $request->file_update ?? null,
+                'status' => '0', // Default status: 0 (diinput)
+                'username' => auth()->user()->username ?? null,
+                'username_update' => $request->username_update ?? null,
+                'datetime_insert' => now()->format('Y-m-d H:i:s'),
+                'datetime_update' => $request->datetime_update ?? null,
+                'basic' => $request->travelBasis ?? $request->basic ?? null,
+                'city' => $request->originCity ?? $request->city ?? null,
+                'rekening' => $request->rekening ?? null,
+                'kabag' => $request->kabag ?? null,
+                'kasubag' => $request->kasubag ?? null,
+                'pimpinan_spt' => $request->pimpinan_spt ?? null,
+                'kabag_spt' => $request->kabag_spt ?? null,
+                'kasubag_spt' => $request->kasubag_spt ?? null,
+                'letter_code_spt' => $request->letter_code_spt ?? null
+            ];
+
+            // Insert and get the ID
+            $id = DB::table('sppd')->insertGetId($data);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SPPD berhasil dibuat',
+                'data' => ['id' => $id]
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan SPPD',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $data = $request->all();
-        $data['pengikut_nip'] = implode(',', $request->pengikut_nip);
-        $data['code'] = $request->letter_code;
-        $data['date'] = now()->format('Y-m-d');
-        $data['username'] = $request->user()->username; // Assuming authenticated user
-
-        $sppd = Sppd::create($data);
-
-        return response()->json($sppd, 201);
     }
-
     // Get single SPPD
     public function show($id)
     {
@@ -207,7 +232,7 @@ class SppdController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'letter_code' => 'sometimes|string|unique:sppds,letter_code,' . $id,
+            // 'letter_code' => 'sometimes|string|unique:sppds,letter_code,' . $id,
             'letter_subject' => 'sometimes|string',
             'letter_about' => 'sometimes|string',
             'letter_from' => 'sometimes|string',
@@ -217,14 +242,14 @@ class SppdController extends Controller
             'rate_travel' => 'sometimes|numeric',
             'pengikut_nip' => 'sometimes|array',
             'purpose' => 'sometimes|string',
-            'transport' => 'sometimes|string',
+            // 'transport' => 'sometimes|string',
             'place_from' => 'sometimes|string',
             'place_to' => 'sometimes|string',
             'date_go' => 'sometimes|date',
             'date_back' => 'sometimes|date|after_or_equal:date_go',
             'government' => 'sometimes|string',
-            'budget' => 'sometimes|string',
-            'budget_from' => 'sometimes|string',
+            // 'budget' => 'sometimes|string',
+            // 'budget_from' => 'sometimes|string',
             'description' => 'sometimes|string',
             'jenis_surat_id' => 'sometimes|exists:jenis_surats,id',
             'basic' => 'nullable|string',
@@ -288,7 +313,6 @@ class SppdController extends Controller
         return response()->json($employees);
     }
 
-    // Generate PDF (similar to cetakdta in original)
     public function generatePdf($id)
     {
         $sppd = Sppd::find($id);
@@ -297,12 +321,70 @@ class SppdController extends Controller
             return response()->json(['message' => 'SPPD not found'], 404);
         }
 
-        // In a real implementation, you would generate a PDF here
-        // For example using barryvdh/laravel-dompdf or laravel-snappy
-
         return response()->json([
             'message' => 'PDF generation would happen here',
             'data' => $sppd
         ]);
     }
+
+    function listPengikut()
+    {
+        $data = DB::table("pegawai")
+            ->select('nip', 'id', 'nama')
+            // ->where('status', 'Aktif')
+            ->get();
+        return response()->json(['data' => $data, 'message' => 'success']);
+
+    }
+    function listAtasan()
+    {
+        $data = DB::table("pegawai")
+            ->select('nip', 'id', 'nama')
+            ->get();
+        return response()->json(['data' => $data, 'message' => 'success']);
+
+    }
+    function instansiAnggaran()
+    {
+        $data = DB::table("pegawai")
+            ->select('nip', 'nama')
+            ->get();
+        return response()->json($data);
+
+    }
+
+    function listPad()
+    {
+        $data = DB::table("sikd_satker")
+            ->get();
+        return response()->json(['data' => $data, 'message' => 'success']);
+
+
+
+    }
+
+    function transportation()
+    {
+        $data = DB::table("transportation")
+            ->get();
+        return response()->json(['data' => $data, 'message' => 'success']);
+
+    }
+
+
+    function rekeningAnggaran()
+    {
+        $data = DB::table("anggaran_perjalanan")
+            ->select("kode_anggaran as code", "nama_kegiatan as name", "id")
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'message' => 'success'
+        ]);
+
+
+
+    }
+
 }

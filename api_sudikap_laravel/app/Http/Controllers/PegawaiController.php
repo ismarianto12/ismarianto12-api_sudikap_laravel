@@ -25,7 +25,7 @@ class PegawaiController extends Controller
     {
         $id_satker = $this->request->get('satker_id');
         $page = 10;
-        
+
         $query = DB::table('pegawai')
             ->select(
                 'pegawai.id',
@@ -60,25 +60,19 @@ class PegawaiController extends Controller
                 DB::raw('IFNULL(sikd_satker.nama, "Belum diset") as namasatker')
             )
             ->leftJoin('sikd_satker', 'pegawai.sikd_satker_id', '=', 'sikd_satker.id');
-            // ->where('pegawai.status_deleted', 0);
+        // ->where('pegawai.status_deleted', 0);
 
         if ($id_satker) {
             $query->where('pegawai.sikd_satker_id', $id_satker);
         }
-        
+
         $query->addSelect(DB::raw("CONCAT('" . url('pegawai/edit/') . "', pegawai.id) as edit_url"));
         $query->addSelect(DB::raw("CONCAT('<button type=\"button\" class=\"btn btn-danger btn-xs delete\" onclick=\"return hapus(', pegawai.id, ')\"><i class=\"fa fa-trash\"></i></button>') as delete_button"));
-        
+
         $dataPegawai = $query->paginate($page);
         return $dataPegawai;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -102,17 +96,34 @@ class PegawaiController extends Controller
         }
 
         try {
-            $pegawai = new Pegawai();
-            $pegawai->fill($request->all());
-            $pegawai->username = auth()->user()->username;
-            $pegawai->datetime_insert = now();
-            $pegawai->status_deleted = 0;
-            $pegawai->save();
+            $pegawaiId = DB::table('pegawai')->insertGetId([
+                'nip' => $request->nip,
+                'nama' => $request->nama,
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'tempat_lahir' => $request->tempat_lahir,
+                'pendidikan' => $request->pendidikan,
+                'pendidikan_lulus' => $request->pendidikan_lulus,
+                'pendidikan_ijazah' => $request->pendidikan_ijazah,
+                'pangkat' => $request->pangkat,
+                'golongan' => $request->golongan,
+                'jabatan' => $request->jabatan,
+                'sikd_satker_id' => $request->sikd_satker_id,
+                'jabatan_tanggal' => $request->jabatan_tanggal,
+                'kerja_tahun' => $request->kerja_tahun,
+                'catatan_mutasi' => $request->catatan_mutasi,
+                'keterangan' => $request->keterangan,
+                'latihan_jabatan' => $request->latihan_jabatan,
+                'latihan_jabatan_tanggal' => $request->latihan_jabatan_tanggal,
+                // 'created_at' => now(),
+                // 'updated_at' => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data pegawai berhasil ditambahkan',
-                'data' => $pegawai
+                'data' => DB::table('pegawai')->find($pegawaiId)
             ], 201);
 
         } catch (\Exception $e) {
@@ -132,16 +143,10 @@ class PegawaiController extends Controller
      */
     public function show($id)
     {
-        $pegawai = Pegawai::where('id', $id)
-            ->where('status_deleted', 0)
+        $pegawai = DB::table('pegawai')
+            ->where('id', $id)
+            // ->where('status_deleted', 0)
             ->first();
-
-        if (!$pegawai) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
-        }
 
         return response()->json([
             'success' => true,
@@ -195,7 +200,7 @@ class PegawaiController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nip' => 'required|unique:pegawai,nip,'.$id,
+            'nip' => 'required|unique:pegawai,nip,' . $id,
             'nama' => 'required',
             'sikd_satker_id' => 'required|exists:sikd_satker,id',
             'no_hp' => 'required',

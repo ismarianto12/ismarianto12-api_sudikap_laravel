@@ -22,24 +22,29 @@ class HomeController extends Controller
 
     }
 
-    function rekapData(Request $request)
+    function rekapData($request)
     {
-        $data = [];
+        $data = null;
+
         switch ($request) {
             case 'disposisi':
-                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
+                $data = DB::table('tbl_disposisi')->count('id_disposisi');
                 break;
-            case 'sppd': 
-                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
-                break; 
-            case 'arsip': 
-                $data = DB::select('count(id) as  data')->table('arsip')->get();
+            case 'sppd':
+                $data = DB::table('sppd')->count('id');
                 break;
-            case 'satker': 
-                $data = DB::select('count(id_disposis) as  data')->table('disposisi')->get();
+            case 'arsip':
+                $data = DB::table('arsip')->count('id_arsip');
+                break;
+            case 'satker':
+                $data = DB::table('m_satuan')->count('id_satuan');
                 break;
         }
-        return response()->json(['data' => $data]);
+
+        return response()->json([
+            'data' => $data,
+            'param' => $request
+        ]);
     }
 
     public function index()

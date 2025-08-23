@@ -69,8 +69,9 @@ class DocumentController extends Controller
      */
     private function getPengikutData($nip)
     {
+        $nips = explode(',', $nip);
         return DB::table('pegawai')
-            ->where('nip', $nip)
+            ->whereIn('nip', $nips)
             ->get();
     }
 
@@ -80,7 +81,7 @@ class DocumentController extends Controller
     private function getPegawaiData($nip)
     {
         return DB::table('pegawai')
-            ->where('nip', $nip)
+            ->whereIn('nip', [$nip])
             ->first();
     }
 
@@ -123,9 +124,11 @@ class DocumentController extends Controller
      */
     public function exportToWord($id, $namaFile = 'SPPD_TEMPLATE')
     {
-        // Get main SPPD data
+        header('Access-Control-Allow-Origin: http://localhost:5173');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
+
         $sppd = $this->getSppdData($id);
-        // dd($sppd->place_to);
 
         if (!$sppd) {
             abort(404, 'Data SPPD tidak ditemukan');
@@ -137,26 +140,21 @@ class DocumentController extends Controller
         $jsurat = $this->getJenisSurat($sppd->jenis_surat_id);
         $pimpinan = $this->getPegawaiData($sppd->pimpinan_nip);
 
+        // dd($sppd->pengikut_nip);
         // Process pengikut data
         $pengikut = $this->getPengikutData($sppd->pengikut_nip);
         $replacements = [];
 
-        foreach ($pengikut as $index => $p) {
-            $replacements[] = [
-                'no' => $index + 1,
-                'nama' => $p->nama,
-                'golongan_pengikut' => $p->golongan,
-                'nip' => $p->nip,
-                'jabatan_pengikut' => $p->jabatan,
-                'place_to' => isset($p->place_to) ? $p->place_to : '',
-                'length_journey' => isset($p->length_journey) ? $p->length_journey : '',
-                'date_go' => isset($p->date_go) ? $this->tglIndonesia($p->date_go) : '',
-                'date_back' => isset($p->date_back) ? $this->tglIndonesia($p->date_back) : '',
-                'government' => isset($p->government) ? $p->government : '',
-                'description' => isset($p->description) ? $p->description : '',
-            ];
-        }
-
+        // dd($pengikut);
+        $listBawahan = [];
+        $nipBawahan = [];
+        foreach ($pengikut as $index => $p) { 
+            $listBawahan[] = $p->nama;
+            $nipBawahan[] = $p->nip;
+           
+        }  
+        // dd(',', $namaList);
+        // die;
         // Load Word template
         $templatePath = storage_path('app/templates/SPPD_OUTIN.docx');
         $templateProcessor = new TemplateProcessor($templatePath);
@@ -175,12 +173,10 @@ class DocumentController extends Controller
 
         // Clone block for pengikut data
         $templateProcessor->cloneBlock('block_name', 0, true, false, $replacements);
-
         // Set values
         $jenissuratnya = explode('~', $jsurat->nama_jenis ?? '');
-
         $templateValues = [
-            'nip_pimpinan' => $sppd->nip_pimpinan ?? '',
+            'nip_pimpinan' => $sppd->nama ?? '',
             'tgl_surat' => $this->tglIndonesia(date('Y-m-d')),
             'jenis_surat' => strtoupper($jenissuratnya[1] ?? ''),
             'letter_code' => $sppd->letter_code ?? '',
@@ -199,12 +195,12 @@ class DocumentController extends Controller
             'nip_pegawai_yang_diperintah' => $diperintah->nip ?? '',
             'jabatan_pegawai_yang_diperintah' => $diperintah->jabatan ?? '',
             'pangkat_gol_pegawai_yang_diperintah' => $diperintah->golongan ?? '',
-            'kota_asal' => $diperintah->place_from ?? '',
-            'kota_tujuan' => $diperintah->place_to ?? '',
-            'transpotasi' => $sppd->transport ?? '',
-            'lama_hari' => $sppd->length_journey ?? '',
+            'place_from' => $diperintah->place_from ?? '',
+            'place_to' => $diperintah->place_to ?? '',
+            'transport' => $sppd->transport ?? '',
+            'length_journey' => $sppd->length_journey ?? '',
             'tgl_perjalanan' => $this->tglIndonesia($sppd->date_go),
-            'atas_beban' => $sppd->budget_from ?? '',
+            'budget_from' => $sppd->budget_from ?? '',
             'rekening' => $sppd->rekening ?? '',
             'nama_penandatangan_sppd' => $perintah->nama ?? '',
             'pangkat_penandatangan_sppd' => $perintah->jabatan ?? '',
@@ -221,11 +217,11 @@ class DocumentController extends Controller
             'letter_content' => $sppd->letter_content ?? '',
             'code' => $sppd->code ?? '',
             'date' => $sppd->date ?? '',
-            'bawahan' => $sppd->bawahan ?? '',
-            'nip_bawahan' => $sppd->bawahan ?? '',
-            'atasan' => $sppd->atasan ?? '',
+            'bawahan' => implode(",",$listBawahan) ?? '',
+            'nip_bawahan' => implode(",",$nipBawahan) ?? '',
+            'atasan' => $pimpinan->nama ?? '',
             'rate_travel' => $sppd->rate_travel ?? '',
-            'pengikut_nip' => $sppd->pengikut_nip ?? '',
+            'pengikut_nip' => $sppd->pengikut_nip ?? '',  
             'place_from' => $sppd->place_from ?? '',
             'government' => $sppd->government ?? '',
             'budget' => $sppd->budget ?? '',

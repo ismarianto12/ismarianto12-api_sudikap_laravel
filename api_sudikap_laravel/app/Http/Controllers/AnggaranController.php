@@ -16,7 +16,7 @@ class AnggaranController extends Controller
     }
 
     // Get single anggaran perjalanan record
-    public function show($id) 
+    public function show($id)
     {
         $anggaran = DB::table('anggaran_perjalanan')->where('id', $id)->first();
 
@@ -25,6 +25,15 @@ class AnggaranController extends Controller
         }
 
         return response()->json($anggaran);
+    }
+    function edit($id)
+    {
+        $data = DB::table('anggaran_perjalanan')
+            ->select('id', 'kode_anggaran', 'nama_kegiatan', 'tahun_anggaran', 'pagu_anggaran', 'sisa_anggaran', 'status')
+            ->where('id', $id)
+            ->first();
+        return response()->json(['data' => $data]);
+
     }
 
     // Create new anggaran perjalanan record
@@ -63,22 +72,18 @@ class AnggaranController extends Controller
             'tahun_anggaran' => 'sometimes|integer|min:2000|max:' . (date('Y') + 5),
             'pagu_anggaran' => 'sometimes|numeric|min:0',
             'sisa_anggaran' => 'sometimes|numeric|min:0',
-            'status' => 'sometimes|in:aktif,non-aktif'
+            // 'status' => 'sometimes|in:aktif,non-aktif'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
-        $affected = DB::table('anggaran_perjalanan')
+        DB::table('anggaran_perjalanan')
             ->where('id', $id)
             ->update($request->all());
 
-        if ($affected === 0) {
-            return response()->json(['message' => 'Anggaran perjalanan not found'], 404);
-        }
-
-        return response()->json(['message' => 'Anggaran perjalanan updated successfully']);
+        return response()->json(['message' => 'Anggaran perjalanan updated successfully', 'data' => 'success']);
     }
 
     // Delete anggaran perjalanan record

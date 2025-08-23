@@ -16,7 +16,7 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\UsersController;
- 
+
 
 Route::prefix('api/v1')->group(function () {
     Route::post('login', [Logincontroller::class, 'authenticate'])->name('login');
@@ -27,6 +27,8 @@ Route::prefix('api/v1')->group(function () {
 Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
     Route::get('/', [HomeController::class, 'index'])->name('/');
     Route::prefix('api/v1')->group(function () {
+        Route::get('rekapData/{id}', [HomeController::class, 'rekapData'])->name('rekapData');
+
         Route::post('getdata', [UserLevelController::class, 'getuserdata'])->name('getdata');
         Route::prefix('disposisi')->group(function () {
             Route::get('currentdisposisi', [DisposisiController::class, 'getcurrentdisposisi'])->name('getcurrent');
@@ -43,15 +45,15 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('update', [InstansiController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [InstansiController::class, 'destroy'])->name('destroy');
         });
- 
+
         Route::prefix('anggaran')->group(function () {
             Route::get('list', [AnggaranController::class, 'index'])->name('list');
             Route::post('insert', [AnggaranController::class, 'store'])->name('insert');
             Route::get('detail/{id}', [AnggaranController::class, 'edit'])->name('detail');
-            Route::post('update', [AnggaranController::class, 'update'])->name('update');
+            Route::post('update/{id}', [AnggaranController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [AnggaranController::class, 'destroy'])->name('destroy');
         });
- 
+
 
         Route::prefix('user')->group(function () {
             Route::get('list', [UsersController::class, 'index'])->name('list');
@@ -64,9 +66,12 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
         Route::prefix('surat')->group(function () {
             Route::get('list', [SppdController::class, 'index'])->name('list');
             Route::post('insert', [SppdController::class, 'store'])->name('insert');
-            Route::get('detail/{id}', [SppdController::class, 'edit'])->name('detail');
-            Route::post('update/{id}', [SppdController::class, 'update'])->name('update');
+            Route::get('detail/{id}', [SppdController::class, 'show'])->name('detail');
+            Route::put('update/{id}', [SppdController::class, 'update'])->name('update'); 
+
             Route::delete('destroy/{id}', [SppdController::class, 'destroy'])->name('destroy');
+            Route::get('rekeningaggaran', [SppdController::class, 'rekeningAnggaran'])->name('rekeningaggaran');
+             
         });
 
         Route::prefix('surat_keluar')->group(function () {
@@ -91,7 +96,7 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
         Route::prefix('pegawai')->group(function () {
             Route::get('list', [PegawaiController::class, 'index'])->name('list');
             Route::post('insert', [PegawaiController::class, 'store'])->name('insert');
-            Route::get('detail/{id}', [PegawaiController::class, 'edit'])->name('detail');
+            Route::get('detail/{id}', [PegawaiController::class, 'show'])->name('detail');
             Route::post('update/{id}', [PegawaiController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [PegawaiController::class, 'destroy'])->name('destroy');
         });
@@ -114,6 +119,16 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('datareportsurat', [SuratController::class, 'datareportsurat'])->name('datareportsurat');
             Route::post('diposisi', [SuratController::class, 'reportDisposisi'])->name('disposisi');
         });
+        Route::prefix('sppdmaster')->group(function () {
+            Route::get('listPengikut', [SppdController::class, 'listPengikut'])->name('listPengikut');
+            Route::get('listAtasan', [SppdController::class, 'listAtasan'])->name('listAtasan');
+            Route::get('instansiAnggaran', [SppdController::class, 'instansiAnggaran'])->name('instansiAnggaran');
+            Route::get("anggaran", [SppdController::class, 'rekeningAnggaran'])->name('anggaran');
+            Route::get("listpad", [SppdController::class, 'listpad'])->name('listpad');
+            Route::get("transportation", [SppdController::class, 'transportation'])->name('listpad');
+
+        });
+
         Route::prefix('satuan')->group(function () {
             Route::get('list', [SatuanController::class, 'list'])->name('list');
             Route::post('insert', [SatuanController::class, 'store'])->name('insert');

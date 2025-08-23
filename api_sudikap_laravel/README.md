@@ -29,3 +29,11 @@ docker exec -it php74_app chown -R www-data:www-data /var/www/html/api_sudikap_l
 docker exec -it php74_app composer dump-autoload
 
 docker exec -it php74_app bash
+
+
+==check docker yang exited di dalam image id nya : 
+# Lihat daftar container yang exited
+docker ps -a --filter "status=exited"
+
+# Jalankan kembali container yang sudah berhenti (perhatikan ID atau NAMENYA)
+docker start <container_id_atau_nama>

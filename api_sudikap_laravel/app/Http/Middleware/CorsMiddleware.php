@@ -15,19 +15,27 @@ class CorsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        // $response = $next($request);
+        // Handle preflight OPTIONS requests
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                ->header('Access-Control-Allow-Credentials', 'true')
+                ->header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, X-Token-Auth, Authorization')
+                ->header('Accept', 'application/json');
+        }
 
-        // $response->header('Access-Control-Allow-Origin', '*');
-        // $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        // $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        $response = $next($request);
 
-        // return $response;
+        // Only add headers if response is not a BinaryFileResponse
+        if (!($response instanceof \Symfony\Component\HttpFoundation\BinaryFileResponse)) {
+            $response->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                ->header('Access-Control-Allow-Credentials', 'true')
+                ->header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, X-Token-Auth, Authorization')
+                ->header('Accept', 'application/json');
+        }
 
-        return $next($request)
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', '*')
-        ->header('Access-Control-Allow-Credentials', true)
-        ->header('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,X-Token-Auth,Authorization')
-        ->header('Accept', 'application/json');
+        return $response;
     }
 }

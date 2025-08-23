@@ -62,13 +62,13 @@ class Sppd extends Model
         'nip_leader'
     ];
 
-    protected $casts = [
-        'budget' => 'decimal:2',
-        'length_journey' => 'integer',
-        'jenis_surat_id' => 'integer',
-        'result_date' => 'date',
-        'status' => 'string'
-    ];
+    // protected $casts = [
+    //     'budget' => 'decimal:2',
+    //     'length_journey' => 'integer',
+    //     'jenis_surat_id' => 'integer',
+    //     'result_date' => 'date',
+    //     'status' => 'string'
+    // ];
 
     /**
      * Scope untuk filter status
