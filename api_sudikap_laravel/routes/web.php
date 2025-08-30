@@ -1,7 +1,8 @@
 <?php
 use App\Http\Controllers\AnggaranController;
+use App\Http\Controllers\SuratMasukController;
+use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\SppdController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InstansiController;
 use App\Http\Controllers\TmjabatanController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\UsersController;
 
+use Illuminate\Support\Facades\Route;
+
 
 Route::prefix('api/v1')->group(function () {
     Route::post('login', [Logincontroller::class, 'authenticate'])->name('login');
@@ -28,7 +31,13 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
     Route::get('/', [HomeController::class, 'index'])->name('/');
     Route::prefix('api/v1')->group(function () {
         Route::get('rekapData/{id}', [HomeController::class, 'rekapData'])->name('rekapData');
-
+        Route::get('files', [FileManagerController::class, 'index'])->name('files');
+      
+        Route::prefix('files')->group(function () {
+             Route::post('upload', [FileManagerController::class, 'upload'])->name('upload');
+    
+        });
+ 
         Route::post('getdata', [UserLevelController::class, 'getuserdata'])->name('getdata');
         Route::prefix('disposisi')->group(function () {
             Route::get('currentdisposisi', [DisposisiController::class, 'getcurrentdisposisi'])->name('getcurrent');
@@ -38,6 +47,7 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('update/{id}', [DisposisiController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [DisposisiController::class, 'destroy'])->name('destroy');
         });
+
         Route::prefix('instansi')->group(function () {
             Route::get('list', [InstansiController::class, 'index'])->name('list');
             Route::post('insert', [InstansiController::class, 'store'])->name('insert');
@@ -67,11 +77,10 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::get('list', [SppdController::class, 'index'])->name('list');
             Route::post('insert', [SppdController::class, 'store'])->name('insert');
             Route::get('detail/{id}', [SppdController::class, 'show'])->name('detail');
-            Route::put('update/{id}', [SppdController::class, 'update'])->name('update'); 
-
+            Route::put('update/{id}', [SppdController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [SppdController::class, 'destroy'])->name('destroy');
             Route::get('rekeningaggaran', [SppdController::class, 'rekeningAnggaran'])->name('rekeningaggaran');
-             
+
         });
 
         Route::prefix('surat_keluar')->group(function () {
@@ -81,6 +90,17 @@ Route::group(['middleware' => ['jwt.verify', 'cors']], function () {
             Route::post('update/{id}', [SuratKeluarController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [SuratKeluarController::class, 'destroy'])->name('destroy');
         });
+        
+
+        Route::prefix('surat_masuk')->group(function () {
+            Route::get('list', [SuratMasukController::class, 'index'])->name('list');
+            Route::post('insert', [SuratMasukController::class, 'store'])->name('insert');
+            Route::get('detail/{id}', [SuratMasukController::class, 'edit'])->name('detail');
+            Route::post('update/{id}', [SuratMasukController::class, 'update'])->name('update');
+            Route::delete('destroy/{id}', [SuratMasukController::class, 'destroy'])->name('destroy');
+        });
+
+
 
         Route::prefix('jenisarsip')->group(function () {
             Route::get('list', [JenisController::class, 'index'])->name('list');

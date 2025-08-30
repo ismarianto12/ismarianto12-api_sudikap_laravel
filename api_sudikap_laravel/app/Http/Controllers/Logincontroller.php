@@ -49,35 +49,61 @@ class Logincontroller extends Controller
             'username' => 'required|string',
             'password' => 'required|string|max:50',
         ]);
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 200);
         }
+
         try {
-            
-            if (!$token = JWTAuth::attempt($credentials)) {
+            // Ambil user dulu
+            $user = User::where('username', $request->username)->first();
+
+            if (!$user || !\Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Login credentials are invalid',
                 ], 400);
             }
+
+            // Mapping level ke angka
+            $roleMap = [
+                'superadmin' => 0,
+                'admin' => 1,
+                'editor' => 2,
+                'user' => 3,
+                'guest' => 4,
+            ];
+
+            $role = $user->level;
+            $level = $roleMap[$role] ?? 99;
+
+            // Masukkan level & role ke dalam token
+            $customClaims = [
+                'role' => $role,
+                'level' => $level,
+            ];
+
+            $token = JWTAuth::claims($customClaims)->attempt($credentials);
+            $user->update([
+                'token' => $token,
+                'statuslogin' => '1',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                // 'userData' => [$this->manipulateData($user)],
+                'accessToken' => $token,
+                'role' => $role,
+                'level' => $level,
+            ]);
         } catch (JWTException $e) {
             return response()->json([
-                'credentials' => $credentials,
                 'success' => false,
                 'message' => 'Could not create token.',
             ], 500);
         }
-
-        $getdata = User::where('username', $request->username);
-        $getdata->update(['token' => $token, 'statuslogin' => '1']);
-
-        return response()->json([
-            'success' => true,
-            'userData' => [$this->manupulatedata($getdata->first())],
-            'accessToken' => $token,
-            "level" => $getdata->first()->level == 'admin' ? 1 : 2,
-        ]);
     }
+
     private function manupulatedata($data)
     {
 

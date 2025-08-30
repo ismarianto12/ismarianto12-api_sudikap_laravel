@@ -23,8 +23,6 @@ class SuratKeluarController extends Controller
     public function index()
     {
         $search = $this->request->search;
-        // response()->json($search);
-        // die;
         $data = DB::table('tbl_surat_keluar as a')
             ->select(
                 'a.id_surat',
@@ -48,13 +46,7 @@ class SuratKeluarController extends Controller
             $data->where('disposisi', $this->request->disposisi);
         }
 
-        // if (auth()->user()->level != 'admin') {
-        //     $data->where('a.id_user', auth()->id());
-        // }
-        // if (auth()->user()->level == 'admin' || auth()->user()->level == 'staff') {
-        //     $data->addSelect(DB::raw('CONCAT("<a href=\'", "' . url('/tsuratkeluar/detail') . '/", a.id_agenda, "\'><i class=\'fa fa-book\'></i>Read</a>", " ", "<a href=\'", "' . url('/tsuratkeluar/edit') . '/", a.id_agenda, "\'><i class=\'fa fa-edit\'></i> Update</a>", " ", "<a href=\'#\' class=\'delete\' data-id=\'", a.id_agenda, "\'><i class=\'fa fa-trash\'></i> Delete</a>") as action'));
-        // }
-        if ($search) {
+         if ($search) {
             $data->where(function ($q) use ($search) {
                 $q->where('a.no_surat', 'like', '%' . $search . '%')
                     ->orWhere('a.kode', 'like', '%' . $search . '%')
@@ -64,7 +56,7 @@ class SuratKeluarController extends Controller
                 // ->orWhere('e.nama_lokasi', 'like', '%' . $search . '%');
             });
         }
-        return $data->paginate($this->request->page);
+        return $data->paginate(10);
     }
 
     /**
@@ -75,6 +67,7 @@ class SuratKeluarController extends Controller
     public function create()
     {
         //
+
     }
 
     /**
@@ -143,9 +136,12 @@ class SuratKeluarController extends Controller
      * @param  \App\Models\suratKeluar  $suratKeluar
      * @return \Illuminate\Http\Response
      */
-    public function show(suratKeluar $suratKeluar)
+    public function show(suratKeluar $suratKeluar, $id)
     {
-        //
+        $data = DB::table("tbl_surat_keluar")->from('tbl_surat_keluar')->where('id', $id)->get();
+        return response()->json([
+            'data' => $data
+        ]);
     }
 
     /**
@@ -154,9 +150,13 @@ class SuratKeluarController extends Controller
      * @param  \App\Models\suratKeluar  $suratKeluar
      * @return \Illuminate\Http\Response
      */
-    public function edit(suratKeluar $suratKeluar)
+    public function edit($id)
     {
-        //
+
+        $data = DB::table("tbl_surat_keluar")->from('tbl_surat_keluar')->where('id', $id)->get();
+        return response()->json([
+            'data' => $data
+        ]);
     }
 
     /**

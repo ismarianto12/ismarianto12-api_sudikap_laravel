@@ -230,7 +230,6 @@ class SppdController extends Controller
         if (!$sppd) {
             return response()->json(['message' => 'SPPD not found'], 404);
         }
-
         $validator = Validator::make($request->all(), [
             // 'letter_code' => 'sometimes|string|unique:sppds,letter_code,' . $id,
             'letter_subject' => 'sometimes|string',
